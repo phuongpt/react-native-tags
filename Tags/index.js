@@ -216,6 +216,8 @@ class Tags extends React.Component {
                       text: tag,
                     },
                     () => {
+                      this.props.onChangeTags &&
+                        this.props.onChangeTags(this.state.tags);
                       this.input.focus();
                     }
                   );
