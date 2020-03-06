@@ -4,7 +4,7 @@ export default StyleSheet.create({
   container: {
     flexDirection: "row",
     flexWrap: "wrap",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   textInputContainer: {
@@ -13,7 +13,7 @@ export default StyleSheet.create({
     height: 32,
     margin: 4,
     borderRadius: 16,
-    backgroundColor: "#ccc"
+    backgroundColor: "#ccc",
   },
 
   textInput: {
@@ -24,7 +24,7 @@ export default StyleSheet.create({
     flex: 1,
     height: 32,
     fontSize: 13,
-    color: "rgba(0, 0, 0, 0.87)"
+    color: "rgba(0, 0, 0, 0.87)",
   },
 
   tag: {
@@ -34,10 +34,25 @@ export default StyleSheet.create({
     paddingLeft: 12,
     paddingRight: 12,
     height: 32,
-    margin: 4
+    margin: 4,
   },
+
   tagLabel: {
     fontSize: 13,
-    color: "rgba(0, 0, 0, 0.87)"
-  }
+    color: "rgba(0, 0, 0, 0.87)",
+  },
+
+  suggestionPanel: {
+    backgroundColor: "#fff",
+    left: 0,
+    right: 0,
+    position: "absolute",
+    zIndex: 1,
+  },
+
+  tagsBottom: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignSelf: "flex-start",
+  },
 });

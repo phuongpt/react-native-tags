@@ -125,128 +125,147 @@ class Tags extends React.Component {
       renderSuggestionsRow,
       suggestionPanelStyle,
       suggestionPanelHorizontal,
+      inputPosition,
     } = this.props;
 
     const { displayDeleteButton, suggestionRowHeight } = this.state;
 
+    const suggestionView = suggestionsData && suggestionsData.length > 0 && (
+      <Animated.View
+        style={[
+          styles.suggestionPanel,
+          suggestionPanelStyle,
+          { height: suggestionRowHeight },
+          inputPosition === "bottom" ? { bottom: 50 } : { top: -50 },
+        ]}>
+        <FlatList
+          showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps={"always"}
+          data={suggestionsData}
+          keyExtractor={(item, index) => index}
+          horizontal={suggestionPanelHorizontal}
+          renderItem={rowData => {
+            return renderSuggestionsRow(
+              rowData,
+              tag => this.addTag(tag),
+              this.stopTracking
+            );
+          }}
+        />
+      </Animated.View>
+    );
+
+    const inputView = !readonly && maxNumberOfTags > this.state.tags.length && (
+      <View style={[styles.textInputContainer, inputContainerStyle]}>
+        <TextInput
+          {...textInputProps}
+          ref={input => {
+            this.input = input;
+          }}
+          value={this.state.text}
+          style={[styles.textInput, inputStyle]}
+          onChangeText={this.onChangeText}
+          onSubmitEditing={this.onSubmitEditing}
+          underlineColorAndroid="transparent"
+        />
+      </View>
+    );
+
+    const tagsView = this.state.tags.map((tag, index) => {
+      const tagProps = {
+        tag,
+        index,
+        displayDeleteButton,
+        deleteTagOnPress,
+        editTagOnPress,
+        onLongPress: e => {
+          if (displayDeleteButtonOnLongPress) {
+            this.setState(({ displayDeleteButton }) => ({
+              displayDeleteButton: !displayDeleteButton,
+            }));
+          }
+        },
+        onDeleteTag: e => {
+          this.setState(
+            {
+              tags: [
+                ...this.state.tags.slice(0, index),
+                ...this.state.tags.slice(index + 1),
+              ],
+            },
+            () => {
+              this.props.onChangeTags &&
+                this.props.onChangeTags(this.state.tags);
+              onTagPress && onTagPress(index, tag, e, true);
+            }
+          );
+        },
+        onPress: e => {
+          if (deleteTagOnPress && !readonly) {
+            this.setState(
+              {
+                tags: [
+                  ...this.state.tags.slice(0, index),
+                  ...this.state.tags.slice(index + 1),
+                ],
+              },
+              () => {
+                this.props.onChangeTags &&
+                  this.props.onChangeTags(this.state.tags);
+                onTagPress && onTagPress(index, tag, e, true);
+              }
+            );
+          } else if (editTagOnPress && !readonly) {
+            this.setState(
+              {
+                tags: [
+                  ...this.state.tags.slice(0, index),
+                  ...this.state.tags.slice(index + 1),
+                ],
+                text: tag,
+              },
+              () => {
+                this.props.onChangeTags &&
+                  this.props.onChangeTags(this.state.tags);
+                this.input.focus();
+              }
+            );
+          } else {
+            onTagPress && onTagPress(index, tag, e, false);
+          }
+        },
+        tagContainerStyle,
+        tagTextStyle,
+      };
+
+      return renderTag(tagProps);
+    });
+
+    if (inputPosition === "bottom") {
+      return (
+        <Animated.View style={[{ width: "100%" }]}>
+          {suggestionView}
+
+          <View style={[styles.container, containerStyle, style]}>
+            {tagsView}
+            {inputView}
+          </View>
+        </Animated.View>
+      );
+    }
+
     return (
       <Animated.View style={[{ width: "100%" }]}>
-        {suggestionsData && suggestionsData.length > 0 && (
-          <Animated.View
-            style={[
-              {
-                backgroundColor: "#fff",
-                left: 0,
-                right: 0,
-                position: "absolute",
-                bottom: 50,
-                zIndex: 1,
-                height: suggestionRowHeight,
-              },
-              suggestionPanelStyle,
-            ]}>
-            <FlatList
-              keyboardShouldPersistTaps={"always"}
-              data={suggestionsData}
-              keyExtractor={(item, index) => index}
-              horizontal={suggestionPanelHorizontal}
-              renderItem={rowData => {
-                return renderSuggestionsRow(
-                  rowData,
-                  tag => this.addTag(tag),
-                  this.stopTracking
-                );
-              }}
-            />
-          </Animated.View>
-        )}
-
-        <View style={[styles.container, containerStyle, style]}>
-          {this.state.tags.map((tag, index) => {
-            const tagProps = {
-              tag,
-              index,
-              displayDeleteButton,
-              deleteTagOnPress,
-              editTagOnPress,
-              onLongPress: e => {
-                if (displayDeleteButtonOnLongPress) {
-                  this.setState(({ displayDeleteButton }) => ({
-                    displayDeleteButton: !displayDeleteButton,
-                  }));
-                }
-              },
-              onDeleteTag: e => {
-                this.setState(
-                  {
-                    tags: [
-                      ...this.state.tags.slice(0, index),
-                      ...this.state.tags.slice(index + 1),
-                    ],
-                  },
-                  () => {
-                    this.props.onChangeTags &&
-                      this.props.onChangeTags(this.state.tags);
-                    onTagPress && onTagPress(index, tag, e, true);
-                  }
-                );
-              },
-              onPress: e => {
-                if (deleteTagOnPress && !readonly) {
-                  this.setState(
-                    {
-                      tags: [
-                        ...this.state.tags.slice(0, index),
-                        ...this.state.tags.slice(index + 1),
-                      ],
-                    },
-                    () => {
-                      this.props.onChangeTags &&
-                        this.props.onChangeTags(this.state.tags);
-                      onTagPress && onTagPress(index, tag, e, true);
-                    }
-                  );
-                } else if (editTagOnPress && !readonly) {
-                  this.setState(
-                    {
-                      tags: [
-                        ...this.state.tags.slice(0, index),
-                        ...this.state.tags.slice(index + 1),
-                      ],
-                      text: tag,
-                    },
-                    () => {
-                      this.props.onChangeTags &&
-                        this.props.onChangeTags(this.state.tags);
-                      this.input.focus();
-                    }
-                  );
-                } else {
-                  onTagPress && onTagPress(index, tag, e, false);
-                }
-              },
-              tagContainerStyle,
-              tagTextStyle,
-            };
-
-            return renderTag(tagProps);
-          })}
-
-          {!readonly && maxNumberOfTags > this.state.tags.length && (
-            <View style={[styles.textInputContainer, inputContainerStyle]}>
-              <TextInput
-                {...textInputProps}
-                ref={input => {
-                  this.input = input;
-                }}
-                value={this.state.text}
-                style={[styles.textInput, inputStyle]}
-                onChangeText={this.onChangeText}
-                onSubmitEditing={this.onSubmitEditing}
-                underlineColorAndroid="transparent"
-              />
-            </View>
-          )}
+        {suggestionView}
+        <View
+          style={[
+            styles.container,
+            containerStyle,
+            style,
+            { flexDirection: "column" },
+          ]}>
+          {inputView}
+          <View style={styles.tagsBottom}>{tagsView}</View>
         </View>
       </Animated.View>
     );
@@ -267,6 +286,7 @@ Tags.defaultProps = {
   startSearchAt: 3,
   suggestionPanelHeight: 50,
   suggestionPanelHorizontal: true,
+  inputPosition: "bottom",
   renderTag: ({ tag, index, ...rest }) => (
     <Tag key={`${tag}-${index}`} label={tag} {...rest} />
   ),
@@ -291,6 +311,7 @@ Tags.propTypes = {
   editTagOnPress: PropTypes.bool,
   displayDeleteButtonOnLongPress: PropTypes.bool,
   renderTag: PropTypes.func,
+  inputPosition: PropTypes.string,
   /* style props */
   containerStyle: PropTypes.any,
   style: PropTypes.any,
